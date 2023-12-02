@@ -9,8 +9,13 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${fileDirname}",
-            "console": "integratedTerminal"
+            "program": ".",
+            "console": "integratedTerminal",
+            "args": [
+                "binding-address", ":5555",
+                "use-tls", "false",
+                "verbose", "true",
+            ]
         }
     ]
 }

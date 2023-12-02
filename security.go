@@ -6,8 +6,8 @@ import (
 )
 
 var (
-	CertFilePath string
-	KeyFilePath  string
+	DefaultCertFilePath string
+	DefaultKeyFilePath  string
 )
 
 func init() {
@@ -16,6 +16,6 @@ func init() {
 		panic(err)
 	}
 	executableDirectory := filepath.Dir(executableLocation)
-	CertFilePath = filepath.Join(executableDirectory, "server-cert.pem")
-	KeyFilePath = filepath.Join(executableDirectory, "server-key.pem")
+	DefaultCertFilePath = filepath.Join(executableDirectory, "server-cert.pem")
+	DefaultKeyFilePath = filepath.Join(executableDirectory, "server-key.pem")
 }

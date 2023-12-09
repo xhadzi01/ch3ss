@@ -14,7 +14,7 @@
             "args": [
                 "binding-address", "0.0.0.0:5555",
                 "use-tls", "false",
-                "verbose", "false",
+                "verbose", "true",
             ]
         }
     ]

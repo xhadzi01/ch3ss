@@ -12,9 +12,9 @@
             "program": ".",
             "console": "integratedTerminal",
             "args": [
-                "binding-address", ":5555",
+                "binding-address", "0.0.0.0:5555",
                 "use-tls", "false",
-                "verbose", "true",
+                "verbose", "false",
             ]
         }
     ]

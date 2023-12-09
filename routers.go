@@ -11,7 +11,7 @@ import (
 type URLRoute struct {
 	Name           string
 	MethodType     string
-	Pattern        string
+	Path           string
 	HandlerFunctor http.HandlerFunc
 }
 
@@ -44,21 +44,19 @@ func NewLogHandlerFuncWrapper(handler http.Handler, name string) LogHandlerFuncW
 }
 
 // NewURLRouter creates a new router for specified routes
-func NewURLRouter(verbose bool, routers ...URLRouter) *mux.Router {
+func NewURLRouter(verbose bool, urlRouter URLRouter) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
-	for _, urlRouter := range routers {
-		for _, urlRoute := range urlRouter.URLRoutes() {
-			var handler http.Handler
-			handler = urlRoute.HandlerFunctor
-			if verbose {
-				handler = NewLogHandlerFuncWrapper(handler, urlRoute.Name)
-			}
-
-			router.Methods(urlRoute.MethodType).
-				Path(urlRoute.Pattern).
-				Name(urlRoute.Name).
-				Handler(handler)
+	for _, urlRoute := range urlRouter.URLRoutes() {
+		var handler http.Handler
+		handler = urlRoute.HandlerFunctor
+		if verbose {
+			handler = NewLogHandlerFuncWrapper(handler, urlRoute.Name)
 		}
+
+		router.Methods(urlRoute.MethodType).
+			Name(urlRoute.Name).
+			Path(urlRoute.Path).
+			Handler(handler)
 	}
 
 	return router

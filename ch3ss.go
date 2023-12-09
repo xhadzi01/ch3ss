@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"go.elastic.co/apm/module/apmgorilla"
 )
 
 type Configuration struct {
@@ -47,21 +49,17 @@ func ParseConfigurationFromCmd() *Configuration {
 	return config
 }
 
-func httpRequestHandler(w http.ResponseWriter, req *http.Request) {
-	w.Write([]byte("Hello,World!\n"))
-}
-
-func Listen(bindingAddress string, verbose bool) {
+func Listen(bindingAddress string, handler http.Handler, verbose bool) {
 	server := http.Server{
 		Addr:    bindingAddress,
-		Handler: http.HandlerFunc(httpRequestHandler),
+		Handler: handler,
 	}
 
 	defer server.Close()
 	log.Fatal(server.ListenAndServe())
 }
 
-func ListenTLS(bindingAddress, certFilePath, keyFilePath string, verbose bool) {
+func ListenTLS(bindingAddress string, handler http.Handler, certFilePath string, keyFilePath string, verbose bool) {
 	// load tls certificates
 	serverTLSCert, err := tls.LoadX509KeyPair(certFilePath, keyFilePath)
 	if err != nil {
@@ -74,7 +72,7 @@ func ListenTLS(bindingAddress, certFilePath, keyFilePath string, verbose bool) {
 
 	server := http.Server{
 		Addr:      bindingAddress,
-		Handler:   http.HandlerFunc(httpRequestHandler),
+		Handler:   handler,
 		TLSConfig: tlsConfig,
 	}
 
@@ -86,9 +84,14 @@ func main() {
 	log.Printf("Server is starting")
 	config := ParseConfigurationFromCmd()
 
+	controller := NewController()
+	apiControllerRouter := NewAPIControllerRouter(controller)
+	router := NewURLRouter(config.VerboseLogging, apiControllerRouter)
+	router.Use(apmgorilla.Middleware())
+
 	if config.TLSConnection {
-		ListenTLS(config.BindingAddress, config.CertFilePath, config.KeyFilePath, config.VerboseLogging)
+		ListenTLS(config.BindingAddress, router, config.CertFilePath, config.KeyFilePath, config.VerboseLogging)
 	} else {
-		Listen(config.BindingAddress, config.VerboseLogging)
+		Listen(config.BindingAddress, router, config.VerboseLogging)
 	}
 }

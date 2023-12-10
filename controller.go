@@ -7,12 +7,15 @@ import (
 )
 
 type Controller struct {
-	Sessions
+	behavior IBehaviorModel
 }
 
-func NewController() IController {
+func NewController(bhv IBehaviorModel) IController {
+	if bhv == nil {
+		panic("could not create controller, behavior is invalid(nil)")
+	}
 	return &Controller{
-		Sessions: make(Sessions, 0),
+		behavior: bhv,
 	}
 }
 
@@ -20,30 +23,77 @@ func (controller *Controller) StartNewGame(writter http.ResponseWriter, request 
 	if controller == nil {
 		panic("Controller instance is nil")
 	}
-	session := NewSession()
-	controller.Sessions = append(controller.Sessions, session)
 
-	encodeResponseAsJSON(writter, http.StatusOK, struct {
-		SessionID
-		PlayerID
-	}{
-		SessionID: session.SessionID,
-		PlayerID:  session.Player1ID,
-	})
-}
-
-func (controller *Controller) ProceedToGame(writter http.ResponseWriter, request *http.Request) {
-	if controller == nil {
-		panic("Controller instance is nil")
+	// update logic
+	session, startGameErr := controller.behavior.StartNewGame()
+	if startGameErr != nil {
+		encodeResponseAsJSON(writter, http.StatusBadRequest, startGameErr)
+		return
 	}
-	fmt.Println("ProceedToGame")
+
+	// respond
+	encodeResponseAsJSON(writter, http.StatusOK, startNewGameResponseModel{
+		SessionID:    uint64(session.SessionID),
+		SessionToken: string(session.SessionToken),
+		PlayerID:     uint64(session.Player1ID),
+	})
 }
 
 func (controller *Controller) JoinGame(writter http.ResponseWriter, request *http.Request) {
 	if controller == nil {
 		panic("Controller instance is nil")
 	}
-	fmt.Println("JoinGame")
+
+	// parse input
+	var joinGameRequest joinGameRequestModel
+	if errParsing := parseJSONMessage(&joinGameRequest, request); errParsing != nil {
+		encodeResponseAsJSON(writter, http.StatusBadRequest, errParsing)
+		return
+	}
+
+	// update logic
+	session, joinGameErr := controller.behavior.JoinGame(SessionID(joinGameRequest.SessionID))
+
+	// respond
+	var responseModel joinGameResponseModel
+
+	if joinGameErr == nil {
+		responseModel = joinGameResponseModel{
+			PlayerID:     uint64(*session.Player2ID),
+			SessionToken: string(session.SessionToken),
+		}
+	} else {
+		responseModel = joinGameResponseModel{
+			FailedReason: joinGameErr.Error(),
+		}
+	}
+
+	encodeResponseAsJSON(writter, http.StatusOK, responseModel)
+}
+
+func (controller *Controller) ProceedToGame(writter http.ResponseWriter, request *http.Request) {
+	if controller == nil {
+		panic("Controller instance is nil")
+	}
+
+	// parse input
+	var proceedToGameRequest proceedToGameGameRequestModel
+	if errParsing := parseJSONMessage(&proceedToGameRequest, request); errParsing != nil {
+		encodeResponseAsJSON(writter, http.StatusBadRequest, errParsing)
+		return
+	}
+
+	// update logic
+	proceed, poceedToGameErr := controller.behavior.ProceedToGame(SessionID(proceedToGameRequest.SessionID), SessionToken(proceedToGameRequest.SessionToken), PlayerID(proceedToGameRequest.PlayerID))
+
+	// respond
+	if poceedToGameErr == nil {
+		encodeResponseAsJSON(writter, http.StatusOK, proceedToGameGameResponseModel{
+			Proceed: proceed,
+		})
+	} else {
+		encodeResponseAsJSON(writter, http.StatusBadRequest, poceedToGameErr.Error())
+	}
 }
 
 func (controller *Controller) GetGameInfo(writter http.ResponseWriter, request *http.Request) {

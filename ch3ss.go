@@ -88,7 +88,8 @@ func main() {
 	log.Printf("Server is starting")
 	config := ParseConfigurationFromCmd()
 
-	controller := NewController()
+	bhvModel := NewBehaviorModel()
+	controller := NewController(bhvModel)
 	apiControllerRouter := NewAPIControllerRouter(controller)
 	router := NewURLRouter(apiControllerRouter)
 	router.Use(apmgorilla.Middleware())

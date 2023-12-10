@@ -30,16 +30,16 @@ func (apiRouter *APIControllerRouter) URLRoutes() URLRoutes {
 			apiRouter.StartNewGame,
 		},
 		{
-			"ProceedToGame",
-			http.MethodPost,
-			"/proceed_to_game/{SessionID}",
-			apiRouter.ProceedToGame,
-		},
-		{
 			"JoinGame",
 			http.MethodPost,
-			"/join_game/{SessionID}",
+			"/join_game",
 			apiRouter.JoinGame,
+		},
+		{
+			"ProceedToGame",
+			http.MethodPost,
+			"/proceed_to_game",
+			apiRouter.ProceedToGame,
 		},
 		{
 			"GetGameInfo",

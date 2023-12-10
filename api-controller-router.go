@@ -53,5 +53,12 @@ func (apiRouter *APIControllerRouter) URLRoutes() URLRoutes {
 			"/get_layer_info/{PlayerID}",
 			apiRouter.GetPlayerInfo,
 		},
+		// Debug functionality
+		{
+			"GetActiveSessions",
+			http.MethodGet,
+			"/debug/get_active_sessions",
+			apiRouter.GetActiveSessions,
+		},
 	}
 }

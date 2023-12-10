@@ -8,4 +8,6 @@ type IController interface {
 	JoinGame(http.ResponseWriter, *http.Request)
 	GetGameInfo(http.ResponseWriter, *http.Request)
 	GetPlayerInfo(http.ResponseWriter, *http.Request)
+	// debug
+	GetActiveSessions(http.ResponseWriter, *http.Request)
 }

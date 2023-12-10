@@ -12,7 +12,7 @@
             "program": ".",
             "console": "integratedTerminal",
             "args": [
-                "-binding-address=:6000",
+                "-binding-address=:32000",
                 "-verbose",
             ]
         }

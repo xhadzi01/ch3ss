@@ -90,12 +90,17 @@ func main() {
 
 	controller := NewController()
 	apiControllerRouter := NewAPIControllerRouter(controller)
-	router := NewURLRouter(config.VerboseLogging, apiControllerRouter)
+	router := NewURLRouter(apiControllerRouter)
 	router.Use(apmgorilla.Middleware())
 
+	var handler http.Handler = router
+	if config.VerboseLogging {
+		handler = NewDebugHandler(handler)
+	}
+
 	if config.TLSConnection {
-		ListenTLS(config.BindingAddress, router, config.CertFilePath, config.KeyFilePath, config.VerboseLogging)
+		ListenTLS(config.BindingAddress, handler, config.CertFilePath, config.KeyFilePath, config.VerboseLogging)
 	} else {
-		Listen(config.BindingAddress, router, config.VerboseLogging)
+		Listen(config.BindingAddress, handler, config.VerboseLogging)
 	}
 }

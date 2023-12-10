@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"go.elastic.co/apm/module/apmgorilla"
 )
@@ -42,8 +43,10 @@ func ParseConfigurationFromCmd() *Configuration {
 	fmt.Println("Configuration:")
 	fmt.Printf("\tbinding-address:'%v'", config.BindingAddress)
 	fmt.Printf("\tuse-tls: '%v'\n", config.TLSConnection)
-	fmt.Printf("\tcert-path: '%v'\n", config.CertFilePath)
-	fmt.Printf("\tkey-path: '%v'\n", config.KeyFilePath)
+	if config.TLSConnection {
+		fmt.Printf("\tcert-path: '%v'\n", config.CertFilePath)
+		fmt.Printf("\tkey-path: '%v'\n", config.KeyFilePath)
+	}
 	fmt.Printf("\tverbose: '%v'\n", config.VerboseLogging)
 
 	return config
@@ -81,6 +84,7 @@ func ListenTLS(bindingAddress string, handler http.Handler, certFilePath string,
 }
 
 func main() {
+	fmt.Println(os.Args)
 	log.Printf("Server is starting")
 	config := ParseConfigurationFromCmd()
 

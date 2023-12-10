@@ -12,9 +12,8 @@
             "program": ".",
             "console": "integratedTerminal",
             "args": [
-                "binding-address", "0.0.0.0:5555",
-                "use-tls", "false",
-                "verbose", "true",
+                "-binding-address=:6000",
+                "-verbose",
             ]
         }
     ]

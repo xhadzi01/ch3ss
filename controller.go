@@ -19,6 +19,17 @@ func NewController(bhv IBehaviorModel) IController {
 	}
 }
 
+func (controller *Controller) ShowMainScreen(writter http.ResponseWriter, request *http.Request) {
+	if controller == nil {
+		panic("Controller instance is nil")
+	}
+	if templ, err := LoadTemplates([]string{"index.html", "header.html", "about.html", "footer.html"}); err != nil {
+		encodeResponseAsText(writter, http.StatusBadRequest, err)
+	} else {
+		templ.ExecuteTemplate(writter, "about", &Page{Title: "About TL;DR"})
+	}
+}
+
 func (controller *Controller) StartNewGame(writter http.ResponseWriter, request *http.Request) {
 	if controller == nil {
 		panic("Controller instance is nil")
@@ -121,4 +132,11 @@ func encodeResponseAsJSON(w http.ResponseWriter, statusCode int, itf interface{}
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(statusCode)
 	return json.NewEncoder(w).Encode(itf)
+}
+
+func encodeResponseAsText(w http.ResponseWriter, statusCode int, itf interface{}) error {
+	w.Header().Set("Content-Type", "text/html; charset=UTF-8")
+	w.WriteHeader(statusCode)
+	_, err := fmt.Fprint(w, itf)
+	return err
 }

@@ -24,6 +24,12 @@ func (apiRouter *APIControllerRouter) URLRoutes() URLRoutes {
 
 	return URLRoutes{
 		{
+			"MainPage",
+			http.MethodGet,
+			"/",
+			apiRouter.StartNewGame,
+		},
+		{
 			"StartNewGame",
 			http.MethodPost,
 			"/start_new_game",

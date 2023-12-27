@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 type Controller struct {
@@ -16,6 +17,18 @@ func NewController(bhv IBehaviorModel) IController {
 	}
 	return &Controller{
 		behavior: bhv,
+	}
+}
+
+func (controller *Controller) ShowMainScreen(writter http.ResponseWriter, request *http.Request) {
+	if controller == nil {
+		panic("Controller instance is nil")
+	}
+
+	if templ, err := LoadTemplates([]string{"header.html", "footer.html", "index.html"}); err != nil {
+		encodeResponseAsText(writter, http.StatusBadRequest, err)
+	} else {
+		templ.ExecuteTemplate(writter, "index", map[string]string{"Title": "Ch3ss"})
 	}
 }
 
@@ -110,6 +123,29 @@ func (controller *Controller) GetPlayerInfo(writter http.ResponseWriter, request
 	fmt.Println("GetPlayerInfo")
 }
 
+func (controller *Controller) GetCurrentScore(writter http.ResponseWriter, request *http.Request) {
+	if controller == nil {
+		panic("Controller instance is nil")
+	}
+
+	if templ, err := LoadTemplates([]string{"header.html", "footer.html", "my-score.html"}); err != nil {
+		encodeResponseAsText(writter, http.StatusBadRequest, err)
+	} else {
+		templ.ExecuteTemplate(writter, "my_score", map[string]string{"Title": "Ch3ss"})
+	}
+}
+func (controller *Controller) GetLeaderboard(writter http.ResponseWriter, request *http.Request) {
+	if controller == nil {
+		panic("Controller instance is nil")
+	}
+
+	if templ, err := LoadTemplates([]string{"header.html", "footer.html", "leaderboard.html"}); err != nil {
+		encodeResponseAsText(writter, http.StatusBadRequest, err)
+	} else {
+		templ.ExecuteTemplate(writter, "leaderboard", map[string]string{"Title": "Ch3ss"})
+	}
+}
+
 func (controller *Controller) GetActiveSessions(writter http.ResponseWriter, request *http.Request) {
 	if controller == nil {
 		panic("Controller instance is nil")
@@ -117,8 +153,53 @@ func (controller *Controller) GetActiveSessions(writter http.ResponseWriter, req
 	fmt.Println("GetPlayerInfo")
 }
 
+func (controller *Controller) GetStatic(writter http.ResponseWriter, request *http.Request) {
+	if controller == nil {
+		panic("Controller instance is nil")
+	}
+
+	fileName := request.URL.Path[strings.LastIndex(request.URL.Path, "/")+1:]
+	suffixString := fileName[strings.LastIndex(fileName, ".")+1:]
+
+	if IsImageResource(suffixString) {
+		serveStaticResource(writter, request, "resources", fileName)
+	} else if IsScriptResource(suffixString) {
+		serveStaticResource(writter, request, "scripts", fileName)
+	}
+}
+
+func IsImageResource(suffix string) bool {
+	suffix = strings.ToLower(suffix)
+	for _, imgSuffix := range []string{"jpg", "jpeg", "png", "tiff", "bmp", "svg"} {
+		if imgSuffix == suffix {
+			return true
+		}
+	}
+	return false
+}
+
+func IsScriptResource(suffix string) bool {
+	return strings.ToLower(suffix) == "js"
+}
+
+func serveStaticResource(writter http.ResponseWriter, request *http.Request, subpaths ...string) error {
+	if fullResourcePath, resourceErr := getResourcePath(subpaths...); resourceErr != nil {
+		return encodeResponseAsText(writter, http.StatusBadRequest, resourceErr)
+	} else {
+		http.ServeFile(writter, request, fullResourcePath)
+		return nil
+	}
+}
+
 func encodeResponseAsJSON(w http.ResponseWriter, statusCode int, itf interface{}) error {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(statusCode)
 	return json.NewEncoder(w).Encode(itf)
+}
+
+func encodeResponseAsText(w http.ResponseWriter, statusCode int, itf interface{}) error {
+	w.Header().Set("Content-Type", "text/html; charset=UTF-8")
+	w.WriteHeader(statusCode)
+	_, err := fmt.Fprint(w, itf)
+	return err
 }

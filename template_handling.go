@@ -8,11 +8,7 @@ import (
 	"path/filepath"
 )
 
-// Page is a helper that allows setting of some special settings related to http page
-type Page struct {
-	Title string
-}
-
+// LoadTemplates is a helper funclion that allows loading static templates
 func LoadTemplates(temmplateNames []string) (templ *template.Template, err error) {
 	if len(temmplateNames) == 0 {
 		err = errors.New("could not create template loader, no template files specified")
@@ -25,9 +21,9 @@ func LoadTemplates(temmplateNames []string) (templ *template.Template, err error
 		retvalTempl := template.New("")
 
 		for _, filename := range temmplateNames {
-			fullFilePath := filepath.Join(curDir, "static", "templates", filename)
+			fullFilePath := filepath.Join(curDir, "static", "template", filename)
 			fileInfo, statErr := os.Stat(fullFilePath)
-			if os.IsNotExist(statErr) || !fileInfo.IsDir() {
+			if os.IsNotExist(statErr) || fileInfo.IsDir() {
 				err = fmt.Errorf("coud not retrieve template file: %v", fullFilePath)
 				return
 			}

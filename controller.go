@@ -23,10 +23,11 @@ func (controller *Controller) ShowMainScreen(writter http.ResponseWriter, reques
 	if controller == nil {
 		panic("Controller instance is nil")
 	}
-	if templ, err := LoadTemplates([]string{"index.html", "header.html", "about.html", "footer.html"}); err != nil {
+
+	if templ, err := LoadTemplates([]string{"header.html", "footer.html", "index.html"}); err != nil {
 		encodeResponseAsText(writter, http.StatusBadRequest, err)
 	} else {
-		templ.ExecuteTemplate(writter, "about", &Page{Title: "About TL;DR"})
+		templ.ExecuteTemplate(writter, "index", map[string]string{"Title": "Ch3ss"})
 	}
 }
 
@@ -119,6 +120,29 @@ func (controller *Controller) GetPlayerInfo(writter http.ResponseWriter, request
 		panic("Controller instance is nil")
 	}
 	fmt.Println("GetPlayerInfo")
+}
+
+func (controller *Controller) GetCurrentScore(writter http.ResponseWriter, request *http.Request) {
+	if controller == nil {
+		panic("Controller instance is nil")
+	}
+
+	if templ, err := LoadTemplates([]string{"header.html", "footer.html", "my-score.html"}); err != nil {
+		encodeResponseAsText(writter, http.StatusBadRequest, err)
+	} else {
+		templ.ExecuteTemplate(writter, "my_score", map[string]string{"Title": "Ch3ss"})
+	}
+}
+func (controller *Controller) GetLeaderboard(writter http.ResponseWriter, request *http.Request) {
+	if controller == nil {
+		panic("Controller instance is nil")
+	}
+
+	if templ, err := LoadTemplates([]string{"header.html", "footer.html", "leaderboard.html"}); err != nil {
+		encodeResponseAsText(writter, http.StatusBadRequest, err)
+	} else {
+		templ.ExecuteTemplate(writter, "leaderboard", map[string]string{"Title": "Ch3ss"})
+	}
 }
 
 func (controller *Controller) GetActiveSessions(writter http.ResponseWriter, request *http.Request) {

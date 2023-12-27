@@ -27,7 +27,7 @@ func (apiRouter *APIControllerRouter) URLRoutes() URLRoutes {
 			"MainPage",
 			http.MethodGet,
 			"/",
-			apiRouter.StartNewGame,
+			apiRouter.ShowMainScreen,
 		},
 		{
 			"StartNewGame",
@@ -58,6 +58,19 @@ func (apiRouter *APIControllerRouter) URLRoutes() URLRoutes {
 			http.MethodGet,
 			"/get_layer_info/{PlayerID}",
 			apiRouter.GetPlayerInfo,
+		},
+		// score overview
+		{
+			"GetCurrentScore",
+			http.MethodGet,
+			"/my-score",
+			apiRouter.GetCurrentScore,
+		},
+		{
+			"GetLeaderboard",
+			http.MethodGet,
+			"/leaderboard",
+			apiRouter.GetLeaderboard,
 		},
 		// Debug functionality
 		{

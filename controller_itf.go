@@ -16,4 +16,6 @@ type IController interface {
 	GetLeaderboard(http.ResponseWriter, *http.Request)
 	// debug
 	GetActiveSessions(http.ResponseWriter, *http.Request)
+	// serve static files
+	GetStatic(http.ResponseWriter, *http.Request)
 }

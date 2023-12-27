@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 type Controller struct {
@@ -150,6 +151,44 @@ func (controller *Controller) GetActiveSessions(writter http.ResponseWriter, req
 		panic("Controller instance is nil")
 	}
 	fmt.Println("GetPlayerInfo")
+}
+
+func (controller *Controller) GetStatic(writter http.ResponseWriter, request *http.Request) {
+	if controller == nil {
+		panic("Controller instance is nil")
+	}
+
+	fileName := request.URL.Path[strings.LastIndex(request.URL.Path, "/")+1:]
+	suffixString := fileName[strings.LastIndex(fileName, ".")+1:]
+
+	if IsImageResource(suffixString) {
+		serveStaticResource(writter, request, "resources", fileName)
+	} else if IsScriptResource(suffixString) {
+		serveStaticResource(writter, request, "scripts", fileName)
+	}
+}
+
+func IsImageResource(suffix string) bool {
+	suffix = strings.ToLower(suffix)
+	for _, imgSuffix := range []string{"jpg", "jpeg", "png", "tiff", "bmp"} {
+		if imgSuffix == suffix {
+			return true
+		}
+	}
+	return false
+}
+
+func IsScriptResource(suffix string) bool {
+	return strings.ToLower(suffix) == "js"
+}
+
+func serveStaticResource(writter http.ResponseWriter, request *http.Request, subpaths ...string) error {
+	if fullResourcePath, resourceErr := getResourcePath(subpaths...); resourceErr != nil {
+		return encodeResponseAsText(writter, http.StatusBadRequest, resourceErr)
+	} else {
+		http.ServeFile(writter, request, fullResourcePath)
+		return nil
+	}
 }
 
 func encodeResponseAsJSON(w http.ResponseWriter, statusCode int, itf interface{}) error {

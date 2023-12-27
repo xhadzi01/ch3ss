@@ -79,5 +79,12 @@ func (apiRouter *APIControllerRouter) URLRoutes() URLRoutes {
 			"/debug/get_active_sessions",
 			apiRouter.GetActiveSessions,
 		},
+		// static
+		{
+			"Static",
+			http.MethodGet,
+			"/static/{ResourceName}",
+			apiRouter.GetStatic,
+		},
 	}
 }

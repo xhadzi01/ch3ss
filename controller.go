@@ -170,7 +170,7 @@ func (controller *Controller) GetStatic(writter http.ResponseWriter, request *ht
 
 func IsImageResource(suffix string) bool {
 	suffix = strings.ToLower(suffix)
-	for _, imgSuffix := range []string{"jpg", "jpeg", "png", "tiff", "bmp"} {
+	for _, imgSuffix := range []string{"jpg", "jpeg", "png", "tiff", "bmp", "svg"} {
 		if imgSuffix == suffix {
 			return true
 		}

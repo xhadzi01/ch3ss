@@ -4,19 +4,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
 type Controller struct {
-	behavior IBehaviorModel
+	behavior   IBehaviorModel
+	management IGameSessionManagement
 }
 
-func NewController(bhv IBehaviorModel) IController {
-	if bhv == nil {
-		panic("could not create controller, behavior is invalid(nil)")
-	}
+func NewController() IController {
 	return &Controller{
-		behavior: bhv,
+		behavior:   NewBehaviorModel(),
+		management: NewGameSessionManagement(),
 	}
 }
 
@@ -24,6 +24,23 @@ func (controller *Controller) ShowMainScreen(writter http.ResponseWriter, reques
 	if controller == nil {
 		panic("Controller instance is nil")
 	}
+
+	http.SetCookie(writter, &http.Cookie{
+		Name:     "sessionID",
+		Value:    "",
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		MaxAge:   -1,
+	})
+	http.SetCookie(writter, &http.Cookie{
+		Name:     "sessionToken",
+		Value:    "",
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		MaxAge:   -1,
+	})
 
 	if templ, err := LoadTemplates([]string{"header.html", "footer.html", "index.html"}); err != nil {
 		encodeResponseAsText(writter, http.StatusBadRequest, err)
@@ -37,19 +54,43 @@ func (controller *Controller) StartNewGame(writter http.ResponseWriter, request 
 		panic("Controller instance is nil")
 	}
 
+	if parseErr := request.ParseForm(); parseErr != nil {
+		encodeResponseAsJSON(writter, http.StatusBadRequest, parseErr)
+		return
+	}
+
+	playerID := request.Form.Get("player-id-text-box-value")
+	parsedPlayerID, parseErr := strconv.ParseUint(playerID, 10, 64)
+	if parseErr != nil {
+		encodeResponseAsJSON(writter, http.StatusBadRequest, parseErr)
+		return
+	}
+
 	// update logic
-	session, startGameErr := controller.behavior.StartNewGame()
+	session, startGameErr := controller.management.StartNewGame(PlayerID(parsedPlayerID))
 	if startGameErr != nil {
 		encodeResponseAsJSON(writter, http.StatusBadRequest, startGameErr)
 		return
 	}
 
-	// respond
-	encodeResponseAsJSON(writter, http.StatusOK, startNewGameResponseModel{
-		SessionID:    uint64(session.SessionID),
-		SessionToken: string(session.SessionToken),
-		PlayerID:     uint64(session.Player1ID),
+	http.SetCookie(writter, &http.Cookie{
+		Name:     "sessionID",
+		Value:    strconv.FormatUint(uint64(session.SessionID), 10),
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		MaxAge:   0,
 	})
+	http.SetCookie(writter, &http.Cookie{
+		Name:     "sessionToken",
+		Value:    string(session.SessionToken),
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		MaxAge:   0,
+	})
+
+	http.Redirect(writter, request, "/proceed-to-game", http.StatusSeeOther)
 }
 
 func (controller *Controller) JoinGame(writter http.ResponseWriter, request *http.Request) {
@@ -57,35 +98,40 @@ func (controller *Controller) JoinGame(writter http.ResponseWriter, request *htt
 		panic("Controller instance is nil")
 	}
 
-	// parse input
-	var joinGameRequest joinGameRequestModel
-	if errParsing := parseJSONMessage(&joinGameRequest, request); errParsing != nil {
-		encodeResponseAsJSON(writter, http.StatusBadRequest, errParsing)
-		return
-	}
+	// // parse input
+	// var joinGameRequest joinGameRequestModel
+	// if errParsing := parseJSONMessage(&joinGameRequest, request); errParsing != nil {
+	// 	encodeResponseAsJSON(writter, http.StatusBadRequest, errParsing)
+	// 	return
+	// }
 
-	// update logic
-	session, joinGameErr := controller.behavior.JoinGame(SessionID(joinGameRequest.SessionID))
+	// // update logic
+	// session, joinGameErr := controller.behavior.JoinGame(SessionID(joinGameRequest.SessionID))
 
-	// respond
-	var responseModel joinGameResponseModel
+	// // respond
+	// var responseModel joinGameResponseModel
 
-	if joinGameErr == nil {
-		responseModel = joinGameResponseModel{
-			PlayerID:     uint64(*session.Player2ID),
-			SessionToken: string(session.SessionToken),
-		}
-	} else {
-		responseModel = joinGameResponseModel{
-			FailedReason: joinGameErr.Error(),
-		}
-	}
+	// if joinGameErr == nil {
+	// 	responseModel = joinGameResponseModel{
+	// 		PlayerID:     uint64(*session.Player2ID),
+	// 		SessionToken: string(session.SessionToken),
+	// 	}
+	// } else {
+	// 	responseModel = joinGameResponseModel{
+	// 		FailedReason: joinGameErr.Error(),
+	// 	}
+	// }
 
-	encodeResponseAsJSON(writter, http.StatusOK, responseModel)
+	// encodeResponseAsJSON(writter, http.StatusOK, responseModel)
 }
 
 func (controller *Controller) ProceedToGame(writter http.ResponseWriter, request *http.Request) {
 	if controller == nil {
+		panic("Controller instance is nil")
+	}
+
+	cookie, err := request.Cookie("sessionID")
+	if err != nil || cookie == nil {
 		panic("Controller instance is nil")
 	}
 
@@ -96,23 +142,59 @@ func (controller *Controller) ProceedToGame(writter http.ResponseWriter, request
 		return
 	}
 
-	// update logic
-	proceed, poceedToGameErr := controller.behavior.ProceedToGame(SessionID(proceedToGameRequest.SessionID), SessionToken(proceedToGameRequest.SessionToken), PlayerID(proceedToGameRequest.PlayerID))
+	// redirect to a waiting screen
+	// encodeResponseAsJSON(writter, http.StatusOK, startNewGameResponseModel{
+	// 	SessionID:    uint64(session.SessionID),
+	// 	SessionToken: string(session.SessionToken),
+	// 	PlayerID:     uint64(session.Player1ID),
+	// })
 
-	// respond
-	if poceedToGameErr == nil {
-		encodeResponseAsJSON(writter, http.StatusOK, proceedToGameGameResponseModel{
-			Proceed: proceed,
-		})
-	} else {
-		encodeResponseAsJSON(writter, http.StatusBadRequest, poceedToGameErr.Error())
-	}
+	return
+	// // update logic
+	// proceed, poceedToGameErr := controller.behavior.ProceedToGame(SessionID(proceedToGameRequest.SessionID), SessionToken(proceedToGameRequest.SessionToken), PlayerID(proceedToGameRequest.PlayerID))
+
+	// // respond
+	// if poceedToGameErr == nil {
+	// 	encodeResponseAsJSON(writter, http.StatusOK, proceedToGameGameResponseModel{
+	// 		Proceed: proceed,
+	// 	})
+	// } else {
+	// 	encodeResponseAsJSON(writter, http.StatusBadRequest, poceedToGameErr.Error())
+	// }
 }
+
+/*
+type ChessPieceInfo struct{
+
+}
+
+{
+	activePlayer: "Player1",
+	chessPieces: []ChessPieceInfo{
+		ChessPieceInfo{},
+		ChessPieceInfo{},
+		ChessPieceInfo{},
+		ChessPieceInfo{},
+		ChessPieceInfo{},
+		ChessPieceInfo{},
+		ChessPieceInfo{},
+		ChessPieceInfo{},
+		ChessPieceInfo{},
+	},
+
+
+
+
+
+
+}
+*/
 
 func (controller *Controller) GetGameInfo(writter http.ResponseWriter, request *http.Request) {
 	if controller == nil {
 		panic("Controller instance is nil")
 	}
+
 	fmt.Println("GetGameInfo")
 }
 
@@ -128,12 +210,41 @@ func (controller *Controller) GetCurrentScore(writter http.ResponseWriter, reque
 		panic("Controller instance is nil")
 	}
 
-	if templ, err := LoadTemplates([]string{"header.html", "footer.html", "my-score.html"}); err != nil {
+	templ, err := LoadTemplates([]string{"header.html", "footer.html", "my-score.html"})
+	if err != nil {
 		encodeResponseAsText(writter, http.StatusBadRequest, err)
-	} else {
-		templ.ExecuteTemplate(writter, "my_score", map[string]string{"Title": "Ch3ss"})
+		return
 	}
+
+	//proceed, poceedToGameErr := controller.behavior.ProceedToGame(SessionID(proceedToGameRequest.SessionID), SessionToken(proceedToGameRequest.SessionToken), PlayerID(proceedToGameRequest.PlayerID))
+
+	data := map[string]string{
+		"Title":        "Ch3ss",
+		"CurrentScore": "275",
+	}
+	templ.ExecuteTemplate(writter, "my_score", data)
 }
+
+func (controller *Controller) ResetScore(writter http.ResponseWriter, request *http.Request) {
+	if controller == nil {
+		panic("Controller instance is nil")
+	}
+
+	templ, err := LoadTemplates([]string{"header.html", "footer.html", "my-score.html"})
+	if err != nil {
+		encodeResponseAsText(writter, http.StatusBadRequest, err)
+		return
+	}
+
+	//proceed, poceedToGameErr := controller.behavior.ProceedToGame(SessionID(proceedToGameRequest.SessionID), SessionToken(proceedToGameRequest.SessionToken), PlayerID(proceedToGameRequest.PlayerID))
+
+	data := map[string]string{
+		"Title":        "Ch3ss",
+		"CurrentScore": "275",
+	}
+	templ.ExecuteTemplate(writter, "my_score", data)
+}
+
 func (controller *Controller) GetLeaderboard(writter http.ResponseWriter, request *http.Request) {
 	if controller == nil {
 		panic("Controller instance is nil")

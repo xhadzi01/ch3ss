@@ -3,23 +3,19 @@
 <div class="content">
     <h2>Ch3ss</h2>
     <div>Welcome to the Ch3ss. We wish you the best luck!</div>
-
-    <div id="dynamic_source">
-        <div class="chessBoardDiv" id="chess_board_div">
-            <img class="chessBoard" src="/static/chessboard.jpg" id="chess_board">
-            <div id="chess_piece_placement" class="chessBoardContent">
-                <!-- Generated code -->
-            </div>
-        </div>
-        <br>
-
-        <form>
-            <input type="text" id="imagename" value="" />
-            <input type="button" id="btn" value="GO" />
-        </form>
-        <input type="text" id="imagename" value="" />
-        <script src="static/dynamic_view.js"></script>
-    </div>
+    <br>
+    <form action="/join-game" method="POST">
+        <label id="player-id-text-box" for="player-id-text-box-value">PlayerID:</label>
+        <input type="text" id="player-id-text-box-value" name="player-id-text-box-value">
+        <br><br>
+        <h3>Start a new game:</h3>
+        <button type="submit" formaction="/start-new-game">Start a new game!</button>
+        <br><br>
+        <h3>Or you can join a game:</h3>
+        <label id="join-game-text" for="join-game-text-value">SessionID:</label>
+        <input type="text" id="join-game-text-value" name="join-game-text-value">
+        <button type="submit">Join a game!</button>
+    </form>
 </div>
 {{template "footer" .}}
 {{end}}

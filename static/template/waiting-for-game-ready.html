@@ -1,0 +1,12 @@
+{{define "index"}}
+{{template "header" .}}
+<div class="content">
+    <h2>Waiting for your game to be ready. Your oponent is not yet ready</h2>
+    <h2>To connect yo this game, your oponent has to use session ID: {{.SessionID}}</h2>
+
+    <div id="periodic-game-ready-check">
+        <script src="static/waiting_for_game.js"></script>
+    </div>
+</div>
+{{template "footer" .}}
+{{end}}

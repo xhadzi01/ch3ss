@@ -32,31 +32,31 @@ func (apiRouter *APIControllerRouter) URLRoutes() URLRoutes {
 		{
 			"StartNewGame",
 			http.MethodPost,
-			"/start_new_game",
+			"/start-new-game",
 			apiRouter.StartNewGame,
 		},
 		{
 			"JoinGame",
 			http.MethodPost,
-			"/join_game",
+			"/join-game",
 			apiRouter.JoinGame,
 		},
 		{
 			"ProceedToGame",
-			http.MethodPost,
-			"/proceed_to_game",
+			http.MethodGet,
+			"/proceed-to-game",
 			apiRouter.ProceedToGame,
 		},
 		{
 			"GetGameInfo",
 			http.MethodGet,
-			"/get_game_info/{SessionID}",
+			"/get-game-info/{SessionID}",
 			apiRouter.GetGameInfo,
 		},
 		{
 			"GetPlayerInfo",
 			http.MethodGet,
-			"/get_layer_info/{PlayerID}",
+			"/get-layer-info/{PlayerID}",
 			apiRouter.GetPlayerInfo,
 		},
 		// score overview
@@ -65,6 +65,12 @@ func (apiRouter *APIControllerRouter) URLRoutes() URLRoutes {
 			http.MethodGet,
 			"/my-score",
 			apiRouter.GetCurrentScore,
+		},
+		{
+			"ResetScore",
+			http.MethodPost,
+			"/reset-score",
+			apiRouter.ResetScore,
 		},
 		{
 			"GetLeaderboard",
@@ -76,7 +82,7 @@ func (apiRouter *APIControllerRouter) URLRoutes() URLRoutes {
 		{
 			"GetActiveSessions",
 			http.MethodGet,
-			"/debug/get_active_sessions",
+			"/debug/get-active-sessions",
 			apiRouter.GetActiveSessions,
 		},
 		// static

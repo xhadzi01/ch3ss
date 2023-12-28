@@ -13,6 +13,7 @@ type IController interface {
 	GetPlayerInfo(http.ResponseWriter, *http.Request)
 	// score overview
 	GetCurrentScore(http.ResponseWriter, *http.Request)
+	ResetScore(http.ResponseWriter, *http.Request)
 	GetLeaderboard(http.ResponseWriter, *http.Request)
 	// debug
 	GetActiveSessions(http.ResponseWriter, *http.Request)

@@ -33,7 +33,7 @@ type PlayerFigurePositions struct {
 	rook2   uint64
 }
 
-type PlayerID uint64
+type PlayerID string
 type PlayerInfo struct {
 	PlayerID
 	PlayerFigurePositions

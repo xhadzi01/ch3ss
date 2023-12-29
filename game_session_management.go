@@ -31,6 +31,7 @@ func (s *GameSessionManagement) JoinGame(sessionID SessionID, player2ID PlayerID
 	for _, sessionInst := range s.Sessions {
 		if sessionInst.SessionID == sessionID {
 			err = sessionInst.JoinSession(player2ID)
+			session = *sessionInst
 			return
 		}
 	}

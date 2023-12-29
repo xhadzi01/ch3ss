@@ -42,6 +42,18 @@ func (apiRouter *APIControllerRouter) URLRoutes() URLRoutes {
 			apiRouter.JoinGame,
 		},
 		{
+			"WaitForOponent",
+			http.MethodGet,
+			"/wait-for-oponent",
+			apiRouter.WaitForOponent,
+		},
+		{
+			"ProceedToGame",
+			http.MethodGet,
+			"/is-ready-to-proceed",
+			apiRouter.IsReadyToProceed,
+		},
+		{
 			"ProceedToGame",
 			http.MethodGet,
 			"/proceed-to-game",

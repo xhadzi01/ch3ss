@@ -6,7 +6,7 @@
     <br>
     <form action="/join-game" method="POST">
         <label id="player-id-text-box" for="player-id-text-box-value">PlayerID:</label>
-        <input type="text" id="player-id-text-box-value" name="player-id-text-box-value">
+        <input type="text" id="player-id-text-box-value" name="player-id-text-box-value" value="{{.PlayerID}}">
         <br><br>
         <h3>Start a new game:</h3>
         <button type="submit" formaction="/start-new-game">Start a new game!</button>

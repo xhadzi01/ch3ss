@@ -189,39 +189,16 @@ func (controller *Controller) IsReadyToProceed(writter http.ResponseWriter, requ
 		panic("Controller instance is nil")
 	}
 
-	// check whether cookies are set and contain correct values
-	var playerID PlayerID
-	var sessionID SessionID
-	var sessionToken SessionToken
-	_ = sessionToken // silence "declared but not used"
 	if playerIDTmp, playerIDErr := GetPlayerIDCookie(request); playerIDErr != nil {
-		encodeResponseAsText(writter, http.StatusBadRequest, "playerID is not set, try again")
-		return
+		encodeResponseAsJSON(writter, http.StatusBadRequest, "playerID is not set, try again")
 	} else if sessionIDTmp, sessionIDErr := GetSessionIDCookie(request); sessionIDErr != nil {
-		encodeResponseAsText(writter, http.StatusBadRequest, "sessionID is not set, try again")
-		return
+		encodeResponseAsJSON(writter, http.StatusBadRequest, "sessionID is not set, try again")
 	} else if sessionTokenTmp, sessionTokenErr := GetSessionTokenCookie(request); sessionTokenErr != nil {
-		encodeResponseAsText(writter, http.StatusBadRequest, "sessionToken is not set, try again")
-		return
-	} else if _, isReadyErr := controller.management.IsReadyToProceed(sessionIDTmp, sessionTokenTmp, playerIDTmp); isReadyErr != nil {
-		encodeResponseAsText(writter, http.StatusBadRequest, isReadyErr)
-		return
+		encodeResponseAsJSON(writter, http.StatusBadRequest, "sessionToken is not set, try again")
+	} else if isReady, isReadyErr := controller.management.IsReadyToProceed(sessionIDTmp, sessionTokenTmp, playerIDTmp); isReadyErr != nil {
+		encodeResponseAsJSON(writter, http.StatusBadRequest, isReadyErr)
 	} else {
-		playerID = playerIDTmp
-		sessionID = sessionIDTmp
-		sessionToken = sessionTokenTmp
-	}
-
-	// load teplates
-	if templ, err := LoadTemplates([]string{"header.html", "footer.html", "waiting-for-game-ready.html"}); err != nil {
-		encodeResponseAsText(writter, http.StatusBadRequest, err)
-	} else {
-		data := map[string]string{
-			"Title":     "Ch3ss",
-			"PlayerID":  string(playerID),
-			"SessionID": fmt.Sprint(sessionID),
-		}
-		templ.ExecuteTemplate(writter, "waiting-for-game-ready", data)
+		encodeResponseAsJSON(writter, http.StatusOK, isReady)
 	}
 }
 
@@ -230,11 +207,9 @@ func (controller *Controller) ProceedToGame(writter http.ResponseWriter, request
 		panic("Controller instance is nil")
 	}
 
+	var session Session
+
 	// check whether cookies are set and contain correct values
-	var playerID PlayerID
-	var sessionID SessionID
-	var sessionToken SessionToken
-	_ = sessionToken // silence "declared but not used"
 	if playerIDTmp, playerIDErr := GetPlayerIDCookie(request); playerIDErr != nil {
 		encodeResponseAsText(writter, http.StatusBadRequest, "playerID is not set, try again")
 		return
@@ -244,25 +219,30 @@ func (controller *Controller) ProceedToGame(writter http.ResponseWriter, request
 	} else if sessionTokenTmp, sessionTokenErr := GetSessionTokenCookie(request); sessionTokenErr != nil {
 		encodeResponseAsText(writter, http.StatusBadRequest, "sessionToken is not set, try again")
 		return
-	} else if _, isReadyErr := controller.management.IsReadyToProceed(sessionIDTmp, sessionTokenTmp, playerIDTmp); isReadyErr != nil {
+	} else if isReady, isReadyErr := controller.management.IsReadyToProceed(sessionIDTmp, sessionTokenTmp, playerIDTmp); isReadyErr != nil {
 		encodeResponseAsText(writter, http.StatusBadRequest, isReadyErr)
 		return
+	} else if !isReady {
+		encodeResponseAsText(writter, http.StatusBadRequest, "game is not yet ready")
+		return
+	} else if sessionTmp, sessionErr := controller.management.GetSessionInfo(sessionIDTmp, sessionTokenTmp); sessionErr != nil {
+		encodeResponseAsText(writter, http.StatusBadRequest, "could not retrieve sesion info")
+		return
 	} else {
-		playerID = playerIDTmp
-		sessionID = sessionIDTmp
-		sessionToken = sessionTokenTmp
+		session = sessionTmp
 	}
 
 	// load teplates
-	if templ, err := LoadTemplates([]string{"header.html", "footer.html", "waiting-for-game-ready.html"}); err != nil {
+	if templ, err := LoadTemplates([]string{"header.html", "footer.html", "game-session.html"}); err != nil {
 		encodeResponseAsText(writter, http.StatusBadRequest, err)
 	} else {
 		data := map[string]string{
 			"Title":     "Ch3ss",
-			"PlayerID":  string(playerID),
-			"SessionID": fmt.Sprint(sessionID),
+			"SessionID": fmt.Sprint(session.SessionID),
+			"PlayerID":  string(session.Player1Info.PlayerID),
+			"OponentID": string(session.Player2Info.PlayerID),
 		}
-		templ.ExecuteTemplate(writter, "waiting-for-game-ready", data)
+		templ.ExecuteTemplate(writter, "game-session", data)
 	}
 }
 

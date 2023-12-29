@@ -68,3 +68,23 @@ func (s *GameSessionManagement) IsReadyToProceed(sessionID SessionID, sessionTok
 	err = errors.New("session does not exist")
 	return
 }
+
+func (s *GameSessionManagement) GetSessionInfo(sessionID SessionID, sessionToken SessionToken) (session Session, err error) {
+	if s == nil {
+		panic("Behvior instance is nil")
+	}
+
+	for _, sessionInst := range s.Sessions {
+		if sessionInst.SessionID == sessionID {
+			if sessionInst.SessionToken != sessionToken {
+				err = errors.New("session token does not match")
+			} else {
+				session = *sessionInst
+			}
+			return
+		}
+	}
+
+	err = errors.New("session does not exist")
+	return
+}

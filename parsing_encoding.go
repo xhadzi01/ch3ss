@@ -26,3 +26,16 @@ func parseJSONMessage(retval interface{}, request *http.Request) (err error) {
 	}
 	return
 }
+
+func encodeResponseAsJSON(w http.ResponseWriter, statusCode int, itf interface{}) error {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(statusCode)
+	return json.NewEncoder(w).Encode(itf)
+}
+
+func encodeResponseAsText(w http.ResponseWriter, statusCode int, itf interface{}) error {
+	w.Header().Set("Content-Type", "text/html; charset=UTF-8")
+	w.WriteHeader(statusCode)
+	_, err := fmt.Fprint(w, itf)
+	return err
+}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"math/rand"
 	"time"
 )
@@ -8,24 +9,18 @@ import (
 type SessionID uint64
 type SessionToken string
 type SessionIDs []SessionID
-type PlayerID uint64
 
 type Session struct {
 	SessionID
 	SessionToken
-	Player1ID   PlayerID
-	Player2ID   *PlayerID
-	GameSession IGameSession
+	Player1Info PlayerInfo
+	Player2Info *PlayerInfo
 }
 
 type Sessions []*Session
 
 func generateNewSessionID() SessionID {
 	return SessionID(rand.Uint64())
-}
-
-func generateNewPlayerID() PlayerID {
-	return PlayerID(rand.Uint64())
 }
 
 const (
@@ -44,12 +39,26 @@ func generateNewSessionToken() SessionToken {
 	return SessionToken(string(letters[:]))
 }
 
-func NewSession() *Session {
+func NewSession(player1ID PlayerID) *Session {
 	return &Session{
 		SessionID:    generateNewSessionID(),
 		SessionToken: generateNewSessionToken(),
-		Player1ID:    generateNewPlayerID(),
-		Player2ID:    nil,
+		Player1Info:  NewPlayerInfo(player1ID, Player1),
+		Player2Info:  nil,
+	}
+}
+
+func (s *Session) JoinSession(player2ID PlayerID) (err error) {
+	if s == nil {
+		err = errors.New("session is invalid (nil)")
+		return
+	} else if s.Player2Info != nil {
+		err = errors.New("session is already full")
+		return
+	} else {
+		player2Info := NewPlayerInfo(player2ID, Player2)
+		s.Player2Info = &player2Info
+		return
 	}
 }
 

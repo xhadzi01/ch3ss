@@ -3,6 +3,12 @@
 <div class="content">
     <h2>Current score</h2>
     <div>This is your current score. You can reset it if you want.</div>
+    <form action="/reset-score" method="POST">
+        <label id="current-score-text" for="current-score-value">Current score:</label>
+        <label id="current-score-value" type="text" name="current-score-value">{{.CurrentScore}}</label>
+        <br>
+        <button type="submit">Reset</button>
+    </form>
 </div>
 {{template "footer" .}}
 {{end}}

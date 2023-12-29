@@ -1,0 +1,25 @@
+{{define "game-session"}}
+{{template "header" .}}
+<div class="content">
+    <h2>Ch3ss session ID: {{.SessionID}}</h2>
+    <h3>Your oponents ID: {{.OponentID}}</h3>
+
+    <div id="dynamic_source">
+        <div class="chessBoardDiv" id="chess_board_div">
+            <img class="chessBoard" src="/static/chessboard.jpg" id="chess_board">
+            <div id="chess_piece_placement" class="chessBoardContent">
+                <!-- Generated code -->
+            </div>
+        </div>
+        <br>
+
+        <form>
+            <input type="text" id="imagename" value="" />
+            <input type="button" id="btn" value="GO" />
+        </form>
+        <input type="text" id="imagename" value="" />
+        <script src="static/dynamic_view.js"></script>
+    </div>
+</div>
+{{template "footer" .}}
+{{end}}

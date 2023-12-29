@@ -1,0 +1,13 @@
+{{define "waiting-for-game-ready"}}
+{{template "header" .}}
+<div class="content">
+    <h2>Your oponent is not yet ready</h2>
+    <h3>Waiting for your game to be ready player: `{{.PlayerID}}`.</h3>
+    <h3>To connect to this game, your oponent has to use session ID: {{.SessionID}}</h3>
+
+    <div id="periodic-game-ready-check">
+        <script src="static/waiting_for_game.js"></script>
+    </div>
+</div>
+{{template "footer" .}}
+{{end}}

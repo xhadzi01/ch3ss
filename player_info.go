@@ -14,23 +14,25 @@ package main
 // |--------------------------------------------------
 // |   ||  A |  B |  C |  D |  E |  F |  G |  H ||   |
 
+type FigureType uint64
+
+const (
+	_ FigureType = iota
+	PawnFigure
+	RookFigure
+	KnightFigure
+	BishopFigure
+	QueenFigure
+	KingFigure
+)
+
+type FigureInfo struct {
+	FigureType
+	CurrentFigurePosition uint64
+}
+
 type PlayerFigurePositions struct {
-	pawn1   uint64
-	pawn2   uint64
-	pawn3   uint64
-	pawn4   uint64
-	pawn5   uint64
-	pawn6   uint64
-	pawn7   uint64
-	pawn8   uint64
-	rook1   uint64
-	knight1 uint64
-	bishop1 uint64
-	queen   uint64
-	king    uint64
-	bishop2 uint64
-	knight2 uint64
-	rook2   uint64
+	FigureInfoList []FigureInfo
 }
 
 type PlayerID string

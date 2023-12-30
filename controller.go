@@ -246,39 +246,33 @@ func (controller *Controller) ProceedToGame(writter http.ResponseWriter, request
 	}
 }
 
-/*
-type ChessPieceInfo struct{
-
-}
-
-{
-	activePlayer: "Player1",
-	chessPieces: []ChessPieceInfo{
-		ChessPieceInfo{},
-		ChessPieceInfo{},
-		ChessPieceInfo{},
-		ChessPieceInfo{},
-		ChessPieceInfo{},
-		ChessPieceInfo{},
-		ChessPieceInfo{},
-		ChessPieceInfo{},
-		ChessPieceInfo{},
-	},
-
-
-
-
-
-
-}
-*/
-
 func (controller *Controller) GetGameInfo(writter http.ResponseWriter, request *http.Request) {
 	if controller == nil {
 		panic("Controller instance is nil")
 	}
 
-	fmt.Println("GetGameInfo")
+	var session Session
+
+	// check whether cookies are set and contain correct values
+	if sessionIDTmp, sessionIDErr := GetSessionIDCookie(request); sessionIDErr != nil {
+		encodeResponseAsJSON(writter, http.StatusBadRequest, "sessionID is not set, try again")
+		return
+	} else if sessionTokenTmp, sessionTokenErr := GetSessionTokenCookie(request); sessionTokenErr != nil {
+		encodeResponseAsJSON(writter, http.StatusBadRequest, "sessionToken is not set, try again")
+		return
+	} else if sessionTmp, sessionErr := controller.management.GetSessionInfo(sessionIDTmp, sessionTokenTmp); sessionErr != nil {
+		encodeResponseAsJSON(writter, http.StatusBadRequest, "could not retrieve sesion info")
+	} else {
+		session = sessionTmp
+	}
+
+	data := map[string]interface{}{
+		"player1": session.Player1Info.PlayerFigurePositions,
+		"player2": session.Player2Info.PlayerFigurePositions,
+	}
+
+	encodeResponseAsJSON(writter, http.StatusOK, data)
+
 }
 
 func (controller *Controller) GetPlayerInfo(writter http.ResponseWriter, request *http.Request) {

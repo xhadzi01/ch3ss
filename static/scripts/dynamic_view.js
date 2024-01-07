@@ -164,17 +164,22 @@ redraw_current_figure_positions()
 /////////////////////////////////////////////////////
 // events
 
-function allowDrop(ev) {
-  ev.preventDefault();
-}
-
+// is executed when figure is grabbed
 function drag(ev, someText) {
   ev.dataTransfer.setData("text", ev.target.id);
-  console.log(someText)
+  console.debug('dragged')
 }
 
+// is executed when figure is hovered over a field
+function allowDrop(ev) {
+  ev.preventDefault();
+  console.debug('allowed')
+}
+
+// is executed when figure is dropped
 function drop(ev) {
   ev.preventDefault();
   var data = ev.dataTransfer.getData("text");
   ev.target.appendChild(document.getElementById(data));
+  console.debug('dropped')
 }

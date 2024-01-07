@@ -15,6 +15,7 @@ package main
 // |   ||  A |  B |  C |  D |  E |  F |  G |  H ||   |
 
 type FigureType uint64
+type FigureIndex uint64
 
 const (
 	_ FigureType = iota
@@ -28,6 +29,7 @@ const (
 
 type FigureInfo struct {
 	FigureType
+	FigureIndex
 	CurrentFigurePosition uint64
 }
 

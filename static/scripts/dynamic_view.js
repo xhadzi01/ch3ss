@@ -104,33 +104,31 @@ function create_chessboard_position_map(player1_figures, player2_figures) {
 
 function create_filled_piece_text(image_name, dev_id_str, figure_id_str, index, isDraggable){
   console.debug('create_filled_piece_text - enter')
-  var filled_piece_template = `<div class="chessPieceDiv" id="DEV_ID_STR" DIV_ON_DRAG_PLACEHOLDER>
-                                  <img class="chessPiece" src="/static/IMAGE_NAME" FIGURE_ON_DRAG_PLACEHOLDER id="FIGURE_ID_STR">
-                              </div>`
 
-  filled_piece_template = filled_piece_template.replace('IMAGE_NAME', image_name).replace('DEV_ID_STR', dev_id_str).replace('FIGURE_ID_STR', figure_id_str);
-
+  let dragable_event_text = ''
+  let figure_on_drag_event_text = ''
   if (isDraggable)  {
-    filled_piece_template = filled_piece_template.replace('DIV_ON_DRAG_PLACEHOLDER', 'ondrop="drop(event)" ondragover="allowDrop(event)"').replace('FIGURE_ON_DRAG_PLACEHOLDER', 'draggable="true" ondragstart="drag(event, `aaaa`)"');
-  } else {
-    filled_piece_template = filled_piece_template.replace('DIV_ON_DRAG_PLACEHOLDER', '').replace('FIGURE_ON_DRAG_PLACEHOLDER', '');
+    dragable_event_text = 'ondrop="drop(event)" ondragover="allowDrop(event)"'
+    figure_on_drag_event_text = 'draggable="true" ondragstart="drag(event, `aaaa`)"'
   }
+
+  var filled_piece_template = `<div class="chessPieceDiv" id="${dev_id_str}" ${dragable_event_text}>
+                                  <img class="chessPiece" src="/static/${image_name}" ${figure_on_drag_event_text} id="${figure_id_str}">
+                              </div>`
 
   return filled_piece_template
 }
 
 function create_empty_piece_text(dev_id_str, index, isDraggable){
   console.debug('create_empty_piece_text - enter')
-  var empty_piece_template = `<div class="chessPieceDiv" id="DEV_ID_STR" DIV_ON_DRAG_PLACEHOLDER></div>`
-
-  empty_piece_template = empty_piece_template.replace('DEV_ID_STR', dev_id_str);
-
+  
+  let dragable_event_text = ''
   if (isDraggable)  {
-    empty_piece_template = empty_piece_template.replace('DIV_ON_DRAG_PLACEHOLDER', 'ondrop="drop(event)" ondragover="allowDrop(event)"');
-  } else {
-    empty_piece_template = empty_piece_template.replace('DIV_ON_DRAG_PLACEHOLDER', '');
+    dragable_event_text = 'ondrop="drop(event)" ondragover="allowDrop(event)"'
   }
   
+  var empty_piece_template = `<div class="chessPieceDiv" id="${dev_id_str}" ${dragable_event_text}></div>`
+
   return empty_piece_template
 }
 

@@ -66,6 +66,12 @@ func (apiRouter *APIControllerRouter) URLRoutes() URLRoutes {
 			apiRouter.GetGameInfo,
 		},
 		{
+			"MoveFigure",
+			http.MethodPut,
+			"/move_figure/{SessionID}",
+			apiRouter.MoveFigure,
+		},
+		{
 			"GetPlayerInfo",
 			http.MethodGet,
 			"/get-layer-info/{PlayerID}",

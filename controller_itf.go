@@ -12,6 +12,7 @@ type IController interface {
 	IsReadyToProceed(http.ResponseWriter, *http.Request)
 	ProceedToGame(http.ResponseWriter, *http.Request)
 	GetGameInfo(http.ResponseWriter, *http.Request)
+	MoveFigure(http.ResponseWriter, *http.Request)
 	GetPlayerInfo(http.ResponseWriter, *http.Request)
 	// score overview
 	GetCurrentScore(http.ResponseWriter, *http.Request)

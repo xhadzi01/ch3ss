@@ -29,6 +29,32 @@ function redraw_current_figure_positions() {
   })
 }
 
+function send_figure_position_update(figure, position) {
+  console.debug(`setting figure: '${figure}' to position: '${position}`)
+  let session_id_str = get_cookie("sessionID")
+  let success = false
+  fetch(`/move_figure/${session_id_str}`, {
+      credentials: "same-origin",
+      mode: "same-origin",
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({figure: figure, targetPosition: position})
+  }).then(resp => {
+      if (resp.status === 200) {
+          return resp.json();
+      } else {
+          throw new Error('Something went wrong');
+      }
+  }).then(dataJson => {
+    console.debug('moving figure was sucessfull')
+    success = true
+  }).catch(err => {
+      console.log(err);
+  })
+
+  return success
+}
+
 /////////////////////////////////////////////////////
 // figure image selection
 
@@ -108,8 +134,8 @@ function create_filled_piece_text(image_name, dev_id_str, figure_id_str, index, 
   let dragable_event_text = ''
   let figure_on_drag_event_text = ''
   if (isDraggable)  {
-    dragable_event_text = 'ondrop="drop(event)" ondragover="allowDrop(event)"'
-    figure_on_drag_event_text = 'draggable="true" ondragstart="drag(event, `aaaa`)"'
+    dragable_event_text = `ondrop="drop(event, ${dev_id_str})" ondragover="allowDrop(event, ${dev_id_str})"`
+    figure_on_drag_event_text = `draggable="true" ondragstart="drag(event, ${dev_id_str})"`
   }
 
   var filled_piece_template = `<div class="chessPieceDiv" id="${dev_id_str}" ${dragable_event_text}>
@@ -124,7 +150,7 @@ function create_empty_piece_text(dev_id_str, index, isDraggable){
   
   let dragable_event_text = ''
   if (isDraggable)  {
-    dragable_event_text = 'ondrop="drop(event)" ondragover="allowDrop(event)"'
+    dragable_event_text = `ondrop="drop(event, ${dev_id_str})" ondragover="allowDrop(event)"`
   }
   
   var empty_piece_template = `<div class="chessPieceDiv" id="${dev_id_str}" ${dragable_event_text}></div>`
@@ -151,35 +177,31 @@ function draw_chessboard_figures(player1_figures, player2_figures) {
 }
 
 /////////////////////////////////////////////////////
-// auxilary
-
-document.getElementById('btn').onclick = function() {
-  console.debug('onclick callback')
-    redraw_current_figure_positions()
-}
-
-
-redraw_current_figure_positions()
-
-/////////////////////////////////////////////////////
 // events
 
 // is executed when figure is grabbed
-function drag(ev, someText) {
+function drag(ev, dragged_figure) {
   ev.dataTransfer.setData("text", ev.target.id);
-  console.debug('dragged')
+  console.debug(`dragged event - place_id: '${dragged_figure.id}' figure_id: '${ev.target.id}'`)
 }
 
 // is executed when figure is hovered over a field
-function allowDrop(ev) {
+function allowDrop(ev, target_slot) {
   ev.preventDefault();
-  console.debug('allowed')
+  console.debug(`drag-over - target_place_id: '${target_slot}'`)
 }
 
 // is executed when figure is dropped
-function drop(ev) {
+function drop(ev, target_slot) {
   ev.preventDefault();
-  var data = ev.dataTransfer.getData("text");
-  ev.target.appendChild(document.getElementById(data));
-  console.debug('dropped')
+  var dropped_figure_id = ev.dataTransfer.getData("text");
+  console.debug(`dropped - target_place_id: '${target_slot.id}' dropped_figure_id: '${dropped_figure_id}'`)
+  send_figure_position_update(dropped_figure_id, target_slot.id)
+
+  ev.target.appendChild(document.getElementById(dropped_figure_id));
 }
+
+
+/////////////////////////////////////////////////////
+// on startup
+redraw_current_figure_positions()

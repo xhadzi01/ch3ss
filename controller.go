@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -272,7 +273,57 @@ func (controller *Controller) GetGameInfo(writter http.ResponseWriter, request *
 	}
 
 	encodeResponseAsJSON(writter, http.StatusOK, data)
+}
 
+func (controller *Controller) MoveFigure(writter http.ResponseWriter, request *http.Request) {
+	if controller == nil {
+		panic("Controller instance is nil")
+	}
+
+	var session Session
+
+	// check whether cookies are set and contain correct values
+	if sessionIDTmp, sessionIDErr := GetSessionIDCookie(request); sessionIDErr != nil {
+		encodeResponseAsJSON(writter, http.StatusBadRequest, "sessionID is not set, try again")
+		return
+	} else if sessionTokenTmp, sessionTokenErr := GetSessionTokenCookie(request); sessionTokenErr != nil {
+		encodeResponseAsJSON(writter, http.StatusBadRequest, "sessionToken is not set, try again")
+		return
+	} else if sessionTmp, sessionErr := controller.management.GetSessionInfo(sessionIDTmp, sessionTokenTmp); sessionErr != nil {
+		encodeResponseAsJSON(writter, http.StatusBadRequest, "could not retrieve sesion info")
+	} else {
+		session = sessionTmp
+	}
+
+	var moveFigureRequestModel MoveFigureRequestModel
+	var moveFigureRequestData MoveFigureRequestData
+	var preprocessErr error = json.NewDecoder(request.Body).Decode(&moveFigureRequestModel)
+	if preprocessErr != nil {
+		//http.Error(writter, preprocessErr.Error(), http.StatusBadRequest)
+		encodeResponseAsJSON(writter, http.StatusBadRequest, preprocessErr.Error())
+		return
+	} else if moveFigureRequestData, preprocessErr = translateMoveFigureRequestData(moveFigureRequestModel); preprocessErr != nil {
+		encodeResponseAsJSON(writter, http.StatusBadRequest, preprocessErr.Error())
+		return
+	}
+
+	var playerInfo *PlayerInfo
+	if moveFigureRequestData.PlayerType == Player1 {
+		playerInfo = &session.Player1Info
+	} else if moveFigureRequestData.PlayerType == Player2 {
+		playerInfo = session.Player2Info
+	} else {
+		encodeResponseAsJSON(writter, http.StatusBadRequest, "invalid player ID")
+		return
+	}
+
+	for idx, _ := range playerInfo.PlayerFigurePositions.FigureInfoList {
+		if playerInfo.PlayerFigurePositions.FigureInfoList[idx].FigureIndex == moveFigureRequestData.FigureIndex {
+			playerInfo.PlayerFigurePositions.FigureInfoList[idx].CurrentFigurePosition = moveFigureRequestData.TargetFigurePosition
+			break
+		}
+	}
+	encodeResponseAsJSON(writter, http.StatusOK, "")
 }
 
 func (controller *Controller) GetPlayerInfo(writter http.ResponseWriter, request *http.Request) {
